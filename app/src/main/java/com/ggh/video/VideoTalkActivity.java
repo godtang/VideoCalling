@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import com.apkfuns.logutils.LogUtils;
 import com.ggh.video.base.DecodeManager;
 import com.ggh.video.base.EncodeManager;
+import com.ggh.video.base.ThreadManager;
 import com.ggh.video.decode.AudioDecoder;
 import com.ggh.video.decode.YuvHardwareDecoder;
 import com.ggh.video.device.CameraManager;
@@ -22,6 +24,8 @@ import com.ggh.video.net.udp.Message;
 import com.ggh.video.net.udp.NettyClient;
 import com.ggh.video.net.udp.NettyReceiverHandler;
 import com.lkl.opengl.MyGLSurfaceView;
+
+import java.util.Collections;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -48,6 +52,7 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
     private String ip;
     private int port;
     private int localPort;
+    private int iCount = 0;
 
 
     public static void newInstance(Context context, String targetIp, String port, String localPort) {
@@ -74,7 +79,7 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
         mDecodeManager.setDecodeCallback(new IEncoderCallback() {
             @Override
             public void onEncodeCallback(byte[] data) {
-                LogUtils.d("222解码后视频长度" + data.length);
+                LogUtils.d("解码后视频长度" + data.length);
                 mGLSurfaceView.feedData(data, 1);
             }
         });
@@ -86,6 +91,7 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
             @Override
             public void onEncodeCallback(byte[] data) {
                 //传输
+                LogUtils.d("编码后" + data.length);
                 mNettyClient.sendData(data, Message.MES_TYPE_VIDEO);
                 //不传输直接渲染
 //                mDecodeManager.onDecodeData(data);
@@ -103,13 +109,35 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
         manager = new CameraManager(preview);
         manager.setOnFrameCallback(VideoTalkActivity.this);
 
+
         findViewById(R.id.test).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 isSend = !isSend;
+                if(isSend) {
+                    ((TextView) findViewById(R.id.test)).setText("sending ");
+                }else {
+                    ((TextView) findViewById(R.id.test)).setText("send");
+                }
             }
         });
 
+        ThreadManager.getThreadPollProxy().execute(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    try {
+                        Thread.sleep(500);
+                        iCount = iCount % 3 + 1;
+                        if(isSend){
+                            ((TextView) findViewById(R.id.test)).setText("sending" + String.join("", Collections.nCopies(iCount, ".")));
+                        }
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -121,7 +149,7 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
     public void onCameraFrame(byte[] data) {
         if (isSend) {
             //发送去编码
-            LogUtils.d("222编码前" + data.length);
+            LogUtils.d("编码前" + data.length);
             mEncodeManager.onEncodeData(data);
         }
     }
@@ -180,9 +208,17 @@ public class VideoTalkActivity extends Activity implements CameraManager.OnFrame
 
     }
 
+    int iRation = 0;
     @OnClick(R.id.btn)
     public void onViewClicked() {
-        mGLSurfaceView.setDisplayOrientation(180);
+        iRation = (iRation+90)%360;
+        mGLSurfaceView.setDisplayOrientation(iRation);
+    }
 
+    @Override
+    public void onBackPressed() {
+        mNettyClient.close();
+        manager.destroy();
+        super.onBackPressed();
     }
 }

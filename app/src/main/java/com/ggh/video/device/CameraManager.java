@@ -75,7 +75,7 @@ public class CameraManager {
     private void initCamera() {
         if (mCamera == null) {
             //摄像头设置，预览视频,实例化摄像头类对象  0为后置 1为前置
-            mCamera = Camera.open(0);
+            mCamera = Camera.open(1);
             //视频旋转90度
             mCamera.setDisplayOrientation(90);
             //将摄像头参数传入p中

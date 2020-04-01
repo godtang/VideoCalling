@@ -8,25 +8,25 @@
         android:id="@+id/test"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:text="开始接收对方数据"/>
+        android:text="send" />
 
     <SurfaceView
         android:id="@+id/texture"
         android:layout_width="100dp"
         android:layout_height="100dp" />
+
     <SurfaceView
         android:id="@+id/surface"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="20dp"
-        />
+        android:layout_width="266dp"
+        android:layout_height="194dp"
+        android:layout_marginTop="20dp" />
 
 
     <com.lkl.opengl.MyGLSurfaceView
         android:id="@+id/glv"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_width="268dp"
+        android:layout_height="211dp"
+        android:layout_marginTop="20dp" />
 
     <Button
         android:id="@+id/btn"

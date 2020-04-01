@@ -19,6 +19,7 @@ public class NettyClient {
     //对方端口
     private int targetport = 7778;
     private NettyReceiverHandler.FrameResultedCallback frameResultedCallback;
+    private EventLoopGroup group;
 
     private NettyClient(Builder builder) {
         localPort = builder.localPort;
@@ -40,7 +41,7 @@ public class NettyClient {
             @Override
             public void run() {
                 Bootstrap b = new Bootstrap();
-                EventLoopGroup group = new NioEventLoopGroup();
+                group = new NioEventLoopGroup();
                 try {
                     b.group(group)
                             .channel(NioDatagramChannel.class)
@@ -70,6 +71,10 @@ public class NettyClient {
      */
     public void sendData(Object data, String msgType) {
         handler.sendData(targetIp, targetport, data, msgType);
+    }
+
+    public void close(){
+        group.shutdownGracefully();
     }
 
 
